@@ -1,0 +1,352 @@
+```html id="dr8lc7"
+<!DOCTYPE html>
+<html lang="fa">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ماشین حساب بیمه</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:tahoma;
+    background:
+    linear-gradient(135deg,#0f172a,#1e293b,#111827);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    direction:rtl;
+}
+
+.card{
+    width:100%;
+    max-width:420px;
+
+    background:rgba(255,255,255,0.08);
+
+    border:1px solid rgba(255,255,255,0.15);
+
+    backdrop-filter:blur(20px);
+
+    border-radius:28px;
+
+    padding:25px;
+
+    box-shadow:
+    0 8px 32px rgba(0,0,0,0.35);
+
+    color:white;
+}
+
+.title{
+    text-align:center;
+    font-size:24px;
+    font-weight:bold;
+    margin-bottom:25px;
+}
+
+.label{
+    margin-bottom:8px;
+    margin-top:18px;
+    font-size:14px;
+    opacity:0.9;
+}
+
+.input{
+    width:100%;
+    height:55px;
+
+    border:none;
+
+    background:rgba(255,255,255,0.08);
+
+    border-radius:18px;
+
+    padding:0 18px;
+
+    color:white;
+
+    font-size:17px;
+
+    outline:none;
+}
+
+.input::placeholder{
+    color:rgba(255,255,255,0.45);
+}
+
+.readonly{
+    background:rgba(255,255,255,0.05);
+}
+
+.toggle{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+}
+
+.toggle button{
+
+    flex:1;
+
+    height:52px;
+
+    border:none;
+
+    border-radius:18px;
+
+    background:rgba(255,255,255,0.08);
+
+    color:white;
+
+    font-size:15px;
+
+    cursor:pointer;
+
+    transition:0.25s;
+}
+
+.toggle button.active{
+
+    background:white;
+
+    color:#111827;
+
+    font-weight:bold;
+}
+
+.resultBox{
+
+    margin-top:15px;
+
+    background:rgba(255,255,255,0.06);
+
+    border-radius:20px;
+
+    padding:15px;
+}
+
+.resultTitle{
+    font-size:13px;
+    opacity:0.8;
+}
+
+.resultValue{
+    margin-top:8px;
+    font-size:24px;
+    font-weight:bold;
+}
+
+.footer{
+    margin-top:18px;
+    text-align:center;
+    opacity:0.55;
+    font-size:12px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<div class="title">
+ماشین حساب تخفیف بیمه
+</div>
+
+<div class="label">
+قیمت بیمه نامه
+</div>
+
+<input
+type="text"
+id="price"
+class="input"
+placeholder="مثلا 12,000,000">
+
+<div class="label">
+درصد سود بیمه
+</div>
+
+<input
+type="number"
+id="percent"
+class="input"
+placeholder="مثلا 15">
+
+<div class="label">
+نوع پرداخت
+</div>
+
+<div class="toggle">
+
+<button id="cashBtn" class="active">
+نقدی
+</button>
+
+<button id="installmentBtn">
+اقساطی
+</button>
+
+</div>
+
+<div class="resultBox">
+
+<div class="resultTitle">
+سود خالص
+</div>
+
+<div class="resultValue" id="grossProfit">
+0
+</div>
+
+</div>
+
+<div class="resultBox">
+
+<div class="resultTitle">
+سقف تخفیف
+</div>
+
+<div class="resultValue" id="discount">
+0
+</div>
+
+</div>
+
+<div class="resultBox">
+
+<div class="resultTitle">
+خالص دریافتی
+</div>
+
+<div class="resultValue" id="netAmount">
+0
+</div>
+
+</div>
+
+<div class="footer">
+طراحی شده برای فروش حرفه‌ای بیمه
+</div>
+
+</div>
+
+<script>
+
+const priceInput = document.getElementById("price");
+const percentInput = document.getElementById("percent");
+
+const grossProfit = document.getElementById("grossProfit");
+const discount = document.getElementById("discount");
+const netAmount = document.getElementById("netAmount");
+
+const cashBtn = document.getElementById("cashBtn");
+const installmentBtn = document.getElementById("installmentBtn");
+
+let paymentType = "cash";
+
+cashBtn.onclick = () => {
+
+    paymentType = "cash";
+
+    cashBtn.classList.add("active");
+    installmentBtn.classList.remove("active");
+
+    calculate();
+}
+
+installmentBtn.onclick = () => {
+
+    paymentType = "installment";
+
+    installmentBtn.classList.add("active");
+    cashBtn.classList.remove("active");
+
+    calculate();
+}
+
+priceInput.addEventListener("input",calculate);
+percentInput.addEventListener("input",calculate);
+
+function formatNumber(number){
+
+    return Math.round(number).toLocaleString("en-US");
+}
+
+function calculate(){
+
+    let rawPrice = priceInput.value.replace(/,/g,'');
+
+    let price = parseFloat(rawPrice) || 0;
+
+    priceInput.value = rawPrice
+    ? Number(rawPrice).toLocaleString("en-US")
+    : '';
+
+    let percent = parseFloat(percentInput.value) || 0;
+
+    let profit = price * (percent / 100);
+
+    let maxDiscount = 0;
+
+    if(profit < 500000){
+
+        maxDiscount = 100000;
+    }
+
+    else if(profit >= 500000 && profit < 1000000){
+
+        maxDiscount = 300000;
+    }
+
+    else if(profit >= 1000000 && profit < 2000000){
+
+        maxDiscount = 500000;
+    }
+
+    else if(profit >= 2000000 && profit < 3000000){
+
+        maxDiscount = 700000;
+    }
+
+    else if(profit >= 3000000 && profit < 5000000){
+
+        maxDiscount = 1200000;
+    }
+
+    else{
+
+        maxDiscount = 3000000;
+    }
+
+    if(paymentType === "installment"){
+
+        maxDiscount *= 0.7;
+    }
+
+    let finalAmount = price - maxDiscount;
+
+    grossProfit.innerText = formatNumber(profit) + " تومان";
+
+    discount.innerText = formatNumber(maxDiscount) + " تومان";
+
+    netAmount.innerText = formatNumber(finalAmount) + " تومان";
+}
+
+</script>
+
+</body>
+</html>
+```
